@@ -1,4 +1,4 @@
-# Délios — Vite + Supabase
+# Délios — Vite + Firebase
 
 Plataforma de acolhimento escolar com formulário confidencial, envio anônimo opcional e painel administrativo protegido.
 
@@ -6,8 +6,8 @@ Plataforma de acolhimento escolar com formulário confidencial, envio anônimo o
 
 - Vite + React + TypeScript;
 - React Router;
-- Supabase Auth e PostgreSQL;
-- Row Level Security;
+- Firebase Authentication e Cloud Firestore;
+- Firestore Security Rules;
 - CSS responsivo;
 - Vercel.
 
@@ -30,7 +30,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Antes de enviar relatos reais, configure o Supabase seguindo [SETUP_SUPABASE.md](SETUP_SUPABASE.md).
+Antes de enviar relatos reais, configure o Firebase seguindo [SETUP_FIREBASE.md](SETUP_FIREBASE.md).
 
 ## Build
 
@@ -42,8 +42,8 @@ O resultado fica em `dist/`.
 
 ## Segurança
 
-- nunca use a chave `service_role` no frontend;
 - mantenha o cadastro de administradores fechado;
+- nunca permita leitura pública da coleção `support_reports`;
 - revise periodicamente quem possui a função `admin`;
 - defina com a escola quem atende os relatos e por quanto tempo os dados serão guardados;
 - não prometa segredo absoluto quando houver necessidade de proteção ou encaminhamento oficial.

@@ -1,37 +1,39 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { Navigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { auth, db } from "../lib/firebase";
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const [state, setState] = useState<"checking" | "allowed" | "denied">("checking");
 
   useEffect(() => {
+    if (!auth || !db) {
+      setState("denied");
+      return;
+    }
+
+    const firebaseAuth = auth;
+    const firestore = db;
     let active = true;
-
-    async function verify() {
-      if (!supabase) {
-        if (active) setState("denied");
-        return;
-      }
-
-      const { data: sessionData } = await supabase.auth.getSession();
-      const user = sessionData.session?.user;
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       if (!user) {
         if (active) setState("denied");
         return;
       }
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
+      try {
+        const adminDocument = await getDoc(doc(firestore, "admins", user.uid));
+        if (active) setState(adminDocument.exists() ? "allowed" : "denied");
+      } catch {
+        if (active) setState("denied");
+      }
+    });
 
-      if (active) setState(!error && data?.role === "admin" ? "allowed" : "denied");
-    }
-
-    void verify();
-    return () => { active = false; };
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
   if (state === "checking") return <main className="center-page"><div className="loader" /><p>Verificando acesso…</p></main>;

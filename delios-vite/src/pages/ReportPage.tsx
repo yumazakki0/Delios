@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Check, ChevronLeft, EyeOff, Lock, Send, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
-import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db, isFirebaseConfigured } from "../lib/firebase";
 import { categoryLabels } from "../types";
 
 type FormState = {
@@ -39,23 +40,27 @@ export function ReportPage() {
     if (!form.category) return setError("Escolha a opção que mais se aproxima da situação.");
     if (form.description.trim().length < 20) return setError("Conte um pouco mais. Use pelo menos 20 caracteres.");
     if (!form.privacy_notice_acknowledged) return setError("Confirme que entendeu como o relato será protegido.");
-    if (!supabase) return setError("O banco ainda não foi configurado. Siga o arquivo SETUP_SUPABASE.md.");
+    if (!db) return setError("O banco ainda não foi configurado. Siga o arquivo SETUP_FIREBASE.md.");
 
     setSubmitting(true);
-    const { error: insertError } = await supabase.from("support_reports").insert({
-      reporter_name: form.reporter_name.trim() || null,
-      school_year: form.school_year || null,
-      class_group: form.class_group.trim() || null,
-      category: form.category,
-      description: form.description.trim(),
-      privacy_notice_acknowledged: true,
-    });
-    setSubmitting(false);
-
-    if (insertError) {
+    try {
+      await addDoc(collection(db, "support_reports"), {
+        reporter_name: form.reporter_name.trim() || null,
+        school_year: form.school_year || null,
+        class_group: form.class_group.trim() || null,
+        category: form.category,
+        description: form.description.trim(),
+        status: "novo",
+        privacy_notice_acknowledged: true,
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      });
+    } catch {
+      setSubmitting(false);
       setError("Não foi possível enviar agora. Tente novamente ou procure a equipe da escola pessoalmente.");
       return;
     }
+    setSubmitting(false);
 
     setForm(initialState);
     setSent(true);
@@ -88,7 +93,7 @@ export function ReportPage() {
         <p>Nome, ano e turma são opcionais. Você pode deixar os três campos vazios e enviar o relato anonimamente.</p>
         <div className="privacy-box"><EyeOff /><div><strong>Outros alunos não verão seu relato.</strong><span>Somente a equipe autorizada terá acesso ao painel.</span></div></div>
         <div className="privacy-box"><Shield /><div><strong>Não prometemos segredo absoluto.</strong><span>Se for preciso proteger alguém, a escola poderá encaminhar informações às pessoas responsáveis pelo atendimento.</span></div></div>
-        {!isSupabaseConfigured && <div className="setup-warning"><Lock /><span>Modo de desenvolvimento: configure o Supabase para ativar o envio.</span></div>}
+        {!isFirebaseConfigured && <div className="setup-warning"><Lock /><span>Modo de desenvolvimento: configure o Firebase para ativar o envio.</span></div>}
       </section>
 
       <form className="report-form" onSubmit={handleSubmit}>

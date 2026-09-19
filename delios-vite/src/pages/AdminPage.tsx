@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertCircle, CheckCircle2, Clock3, LogOut, RefreshCw, Search, ShieldCheck, UserRound } from "lucide-react";
+import { signOut } from "firebase/auth";
+import { collection, doc, getDocs, orderBy, query, serverTimestamp, updateDoc, type Timestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { auth, db } from "../lib/firebase";
 import { categoryLabels, statusLabels, type ReportStatus, type SupportReport } from "../types";
 
 const statuses: ReportStatus[] = ["novo", "em_analise", "encaminhado", "concluido"];
@@ -16,11 +18,26 @@ export function AdminPage() {
   const [categoryFilter, setCategoryFilter] = useState("todos");
 
   const loadReports = useCallback(async () => {
-    if (!supabase) return;
+    if (!db) return;
     setLoading(true); setError("");
-    const { data, error: loadError } = await supabase.from("support_reports").select("*").order("created_at", { ascending: false });
-    if (loadError) setError("Não foi possível carregar os relatos.");
-    else setReports((data ?? []) as SupportReport[]);
+    try {
+      const snapshot = await getDocs(query(collection(db, "support_reports"), orderBy("created_at", "desc")));
+      const loadedReports = snapshot.docs.map((reportDocument) => {
+        const data = reportDocument.data();
+        const createdAt = data.created_at as Timestamp | undefined;
+        const updatedAt = data.updated_at as Timestamp | undefined;
+
+        return {
+          id: reportDocument.id,
+          ...data,
+          created_at: createdAt?.toDate().toISOString() ?? new Date().toISOString(),
+          updated_at: updatedAt?.toDate().toISOString() ?? new Date().toISOString(),
+        } as SupportReport;
+      });
+      setReports(loadedReports);
+    } catch {
+      setError("Não foi possível carregar os relatos.");
+    }
     setLoading(false);
   }, []);
 
@@ -44,14 +61,18 @@ export function AdminPage() {
   }), [reports]);
 
   async function updateStatus(id: string, status: ReportStatus) {
-    if (!supabase) return;
+    if (!db) return;
     setReports((items) => items.map((item) => item.id === id ? { ...item, status } : item));
-    const { error: updateError } = await supabase.from("support_reports").update({ status }).eq("id", id);
-    if (updateError) { setError("A alteração não foi salva."); void loadReports(); }
+    try {
+      await updateDoc(doc(db, "support_reports", id), { status, updated_at: serverTimestamp() });
+    } catch {
+      setError("A alteração não foi salva.");
+      void loadReports();
+    }
   }
 
   async function logout() {
-    await supabase?.auth.signOut();
+    if (auth) await signOut(auth);
     navigate("/login", { replace: true });
   }
 
