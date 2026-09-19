@@ -1,6 +1,6 @@
 # Délios — Vite + Firebase
 
-Plataforma de acolhimento escolar com formulário confidencial, envio anônimo opcional e painel administrativo protegido.
+Plataforma de acolhimento escolar com contas individuais, identidade protegida e painel administrativo com acesso por função.
 
 ## Tecnologias
 
@@ -14,7 +14,8 @@ Plataforma de acolhimento escolar com formulário confidencial, envio anônimo o
 ## Funcionalidades
 
 - página inicial responsiva;
-- formulário com nome, ano e turma opcionais;
+- conta estudantil ativada por código individual;
+- identidade separada do conteúdo do relato;
 - categorias de situação e descrição livre;
 - confirmação clara de confidencialidade e limites do sigilo;
 - login sem cadastro público;
@@ -23,14 +24,16 @@ Plataforma de acolhimento escolar com formulário confidencial, envio anônimo o
 - triagem auxiliar de padrões suspeitos, sempre sujeita à revisão humana;
 - classificação manual e anotações internas protegidas;
 - botão de saída rápida;
+- limite de um novo envio a cada 45 segundos por conta;
+- identificação excepcional somente pela direção, com justificativa registrada;
 - banco protegido contra leitura anônima.
 
 ## Rodar no VS Code
 
 ```bash
 npm install
-cp .env.example .env
-npm run dev
+cp .env.example .env.local
+npm run dev:full
 ```
 
 Antes de enviar relatos reais, configure o Firebase seguindo [SETUP_FIREBASE.md](SETUP_FIREBASE.md).
@@ -47,6 +50,8 @@ O resultado fica em `dist/`.
 
 - mantenha o cadastro de administradores fechado;
 - nunca permita leitura pública da coleção `support_reports`;
-- revise periodicamente quem possui a função `admin`;
+- revise periodicamente quem possui as funções `director` e `staff`;
+- nunca coloque `FIREBASE_ADMIN_PRIVATE_KEY` no frontend ou no GitHub;
+- use somente dados fictícios durante o desenvolvimento;
 - defina com a escola quem atende os relatos e por quanto tempo os dados serão guardados;
 - não prometa segredo absoluto quando houver necessidade de proteção ou encaminhamento oficial.

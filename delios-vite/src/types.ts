@@ -16,6 +16,8 @@ export type SupportReport = {
   priority?: ReportPriority;
   review_result?: ReviewResult;
   internal_notes?: string;
+  triage_flags?: string[];
+  identity_protected?: boolean;
 };
 
 export const categoryLabels: Record<string, string> = {

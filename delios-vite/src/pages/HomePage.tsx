@@ -17,12 +17,12 @@ export function HomePage() {
         <div className="hero-copy">
           <p className="eyebrow">Apoio escolar, sem julgamentos</p>
           <h1>Você não precisa enfrentar tudo sozinho.</h1>
-          <p className="hero-lead">Conte o que está acontecendo do seu jeito. Você escolhe se quer informar seu nome, ano e turma.</p>
+          <p className="hero-lead">Conte o que está acontecendo do seu jeito. Sua conta confirma que você é estudante, mas sua identidade fica separada do relato durante o atendimento comum.</p>
           <div className="hero-actions">
             <Link className="button button-primary button-large" to="/ajuda">Fazer um relato <ArrowRight /></Link>
             <a className="button button-outline button-large" href="#entenda">Entender situações</a>
           </div>
-          <div className="privacy-line"><EyeOff /><span>O relato pode ser anônimo e não fica visível para outros alunos.</span></div>
+          <div className="privacy-line"><EyeOff /><span>O relato é confidencial, não público e não promete anonimato absoluto.</span></div>
         </div>
 
         <div className="hero-panel">
@@ -40,7 +40,7 @@ export function HomePage() {
       </section>
 
       <section className="promise-strip">
-        <span>Você escolhe o que informar</span>
+        <span>Identidade protegida durante o atendimento</span>
         <span>Acesso restrito à equipe autorizada</span>
         <span>O próximo passo pode ser simples</span>
       </section>

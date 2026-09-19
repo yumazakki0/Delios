@@ -6,6 +6,9 @@ import {
   ChevronRight,
   CircleAlert,
   Clock3,
+  Eye,
+  EyeOff,
+  IdCard,
   Inbox,
   LogOut,
   RefreshCw,
@@ -13,12 +16,14 @@ import {
   Search,
   ShieldCheck,
   UserRound,
+  Users,
   X,
 } from "lucide-react";
 import { signOut } from "firebase/auth";
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   orderBy,
   query,
@@ -26,7 +31,7 @@ import {
   updateDoc,
   type Timestamp,
 } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getContentFlags } from "../lib/contentTriage";
 import { auth, db } from "../lib/firebase";
 import {
@@ -43,6 +48,7 @@ import {
 const statuses: ReportStatus[] = ["novo", "em_analise", "encaminhado", "concluido"];
 const priorities: ReportPriority[] = ["nao_definida", "baixa", "media", "alta"];
 type QueueFilter = "todos" | "novos" | "andamento" | "revisar" | "concluidos";
+type RevealedIdentity = { fullName: string; username: string; schoolYear: string; classGroup: string };
 
 // Um formatador só para a data não decidir virar hieróglifo no meio do expediente.
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
@@ -69,6 +75,11 @@ export function AdminPage() {
   const [priorityFilter, setPriorityFilter] = useState<"todos" | ReportPriority>("todos");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [notesDraft, setNotesDraft] = useState("");
+  const [adminRole, setAdminRole] = useState("staff");
+  const [revealedContent, setRevealedContent] = useState<Set<string>>(new Set());
+  const [identityReason, setIdentityReason] = useState("");
+  const [revealedIdentity, setRevealedIdentity] = useState<RevealedIdentity | null>(null);
+  const [revealingIdentity, setRevealingIdentity] = useState(false);
 
   // Nesta parte não tem gracinha: os relatos são dados sensíveis e chegam sem alteração.
   const loadReports = useCallback(async () => {
@@ -107,6 +118,15 @@ export function AdminPage() {
   useEffect(() => {
     void loadReports();
   }, [loadReports]);
+
+  useEffect(() => {
+    async function loadRole() {
+      if (!db || !auth?.currentUser) return;
+      const profile = await getDoc(doc(db, "admins", auth.currentUser.uid));
+      setAdminRole(profile.data()?.role ?? "staff");
+    }
+    void loadRole();
+  }, []);
 
   // A fila automática aponta padrões; ela não julga se o relato é verdadeiro.
   const reportsWithTriage = useMemo(
@@ -160,6 +180,12 @@ export function AdminPage() {
     setSelectedId(report.id);
     setNotesDraft(report.internal_notes ?? "");
     setFeedback("");
+    setIdentityReason("");
+    setRevealedIdentity(null);
+  }
+
+  function revealContent(reportId: string) {
+    setRevealedContent((current) => new Set(current).add(reportId));
   }
 
   // Atualização otimista: a tela responde primeiro e o Firestore confirma logo depois.
@@ -197,6 +223,30 @@ export function AdminPage() {
     );
   }
 
+  async function revealIdentity() {
+    if (!selectedReport || !auth?.currentUser) return;
+    setError("");
+    setFeedback("");
+    setRevealingIdentity(true);
+
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch("/api/admin/reveal-identity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reportId: selectedReport.id, reason: identityReason }),
+      });
+      const data = await response.json() as { identity?: RevealedIdentity; error?: string };
+      if (!response.ok || !data.identity) throw new Error(data.error ?? "Não foi possível revelar a identidade.");
+      setRevealedIdentity(data.identity);
+      setFeedback("A identificação foi revelada e o acesso ficou registrado.");
+    } catch (revealError) {
+      setError(revealError instanceof Error ? revealError.message : "Não foi possível revelar a identidade.");
+    } finally {
+      setRevealingIdentity(false);
+    }
+  }
+
   async function logout() {
     if (auth) await signOut(auth);
     navigate("/login", { replace: true });
@@ -211,6 +261,7 @@ export function AdminPage() {
           <p>Abra um ticket, avalie com atenção e registre somente o andamento necessário.</p>
         </div>
         <div className="admin-actions">
+          {adminRole === "director" && <Link className="button button-outline" to="/admin/alunos"><Users /> Alunos</Link>}
           <button className="button button-outline" onClick={() => void loadReports()} disabled={loading}>
             <RefreshCw /> Atualizar
           </button>
@@ -253,7 +304,7 @@ export function AdminPage() {
       <section className="admin-toolbar">
         <label className="search-field">
           <Search />
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por conteúdo, identificação ou ID" />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por conteúdo ou ID" />
         </label>
         <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "todos" | ReportStatus)} aria-label="Filtrar por status">
           <option value="todos">Todos os status</option>
@@ -298,10 +349,10 @@ export function AdminPage() {
                         <strong>{categoryLabels[report.category] ?? report.category}</strong>
                         <ChevronRight />
                       </div>
-                      <p>{report.description}</p>
+                      <p>{needsReview ? "Conteúdo oculto até que um profissional escolha revisá-lo." : report.description}</p>
                       <div className="ticket-tags">
                         <span className={`priority-chip priority-${priority}`}>{priorityLabels[priority]}</span>
-                        <span>{report.reporter_name ? "Identificado" : "Anônimo"}</span>
+                        <span><EyeOff /> Identidade protegida</span>
                         {needsReview && <span className="review-chip"><AlertTriangle /> Revisar conteúdo</span>}
                       </div>
                     </button>
@@ -325,11 +376,11 @@ export function AdminPage() {
               <p className="detail-date">Recebido em {dateFormatter.format(new Date(selectedReport.created_at))}</p>
 
               <section className="detail-identity">
-                <span><UserRound /></span>
+                <span><EyeOff /></span>
                 <div>
-                  <small>Identificação informada</small>
-                  <strong>{selectedReport.reporter_name || "Relato anônimo"}</strong>
-                  <p>{[selectedReport.school_year, selectedReport.class_group].filter(Boolean).join(" · ") || "Ano e turma não informados"}</p>
+                  <small>Identidade do estudante</small>
+                  <strong>Protegida durante o atendimento</strong>
+                  <p>A conta foi autenticada, mas os dados pessoais ficam em uma coleção separada.</p>
                 </div>
               </section>
 
@@ -338,12 +389,15 @@ export function AdminPage() {
                   <div><AlertTriangle /><strong>Leitura adicional recomendada</strong></div>
                   <p>Os sinais abaixo não provam que o relato seja falso ou mal-intencionado.</p>
                   <ul>{selectedFlags.map((flag) => <li key={flag.code}><strong>{flag.label}:</strong> {flag.explanation}</li>)}</ul>
+                  {!revealedContent.has(selectedReport.id) && <button className="button button-outline" onClick={() => revealContent(selectedReport.id)}><Eye /> Exibir conteúdo para revisão</button>}
                 </section>
               )}
 
               <section className="report-full-text">
                 <small>Relato completo</small>
-                <p>{selectedReport.description}</p>
+                {selectedFlags.length > 0 && !revealedContent.has(selectedReport.id)
+                  ? <div className="concealed-content"><EyeOff /><strong>Conteúdo desfocado preventivamente</strong><span>Use o botão de revisão acima para exibir.</span></div>
+                  : <p>{selectedReport.description}</p>}
               </section>
 
               <section className="decision-grid">
@@ -360,6 +414,27 @@ export function AdminPage() {
                   </select>
                 </label>
               </section>
+
+              {selectedReport.review_result === "conteudo_inadequado" && (
+                <section className="identity-reveal-box">
+                  <div><IdCard /><strong>Identificação excepcional</strong></div>
+                  <p>Somente a direção pode usar este recurso. A justificativa e o responsável pelo acesso ficam registrados.</p>
+                  {adminRole === "director" ? (
+                    revealedIdentity ? (
+                      <div className="revealed-identity">
+                        <small>Identidade revelada</small>
+                        <strong>{revealedIdentity.fullName}</strong>
+                        <span>@{revealedIdentity.username} · {revealedIdentity.schoolYear} · Turma {revealedIdentity.classGroup}</span>
+                      </div>
+                    ) : (
+                      <>
+                        <textarea rows={3} maxLength={500} value={identityReason} onChange={(event) => setIdentityReason(event.target.value)} placeholder="Explique o motivo institucional para identificar este estudante (mínimo de 20 caracteres)." />
+                        <button className="button button-dark" disabled={revealingIdentity || identityReason.trim().length < 20} onClick={() => void revealIdentity()}><UserRound /> {revealingIdentity ? "Registrando acesso…" : "Registrar e revelar identidade"}</button>
+                      </>
+                    )
+                  ) : <small>Encaminhe este ticket para uma conta de direção realizar a análise.</small>}
+                </section>
+              )}
 
               <section className="workflow-box">
                 <label>

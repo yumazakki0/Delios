@@ -279,6 +279,58 @@ input::placeholder, textarea::placeholder { color: #93a5ab; }
 .detail-placeholder h2 { margin: .8rem 0 0; color: var(--night); }
 .detail-placeholder p { margin-top: .25rem; }
 .empty-state.compact { min-height: 310px; padding: 1rem; }
+
+/* V3: acesso estudantil claro, sem transformar privacidade em caça ao tesouro. */
+.student-access-page { min-height: calc(100vh - 76px); padding: clamp(2rem, 7vw, 7rem) clamp(1rem, 8vw, 10rem); display: grid; grid-template-columns: 1fr minmax(380px, .75fr); align-items: center; gap: clamp(3rem, 8vw, 9rem); background: linear-gradient(135deg, var(--night-deep) 0 51%, #eaf4f6 51%); }
+.student-access-info { color: #b8ccd0; }
+.student-access-info h1, .import-heading h1 { margin: 0; color: #fff; font-size: clamp(3rem, 6vw, 5.8rem); line-height: .98; letter-spacing: -.06em; }
+.student-access-info > p:not(.eyebrow) { max-width: 650px; }
+.student-access-info ul { margin: 1.6rem 0 0; padding: 0; display: grid; gap: .65rem; list-style: none; }
+.student-access-info li { display: flex; gap: .65rem; align-items: center; }
+.student-access-info li::before { content: ""; width: 9px; height: 9px; flex: 0 0 auto; background: var(--cyan); border-radius: 50%; }
+.student-access-card { padding: clamp(1.5rem, 3vw, 2.5rem); background: #fff; border: 1px solid #d3e1e5; border-radius: 26px 26px 26px 8px; box-shadow: 0 30px 70px rgb(5 39 50 / 15%); }
+.student-access-card h2 { margin: 0; font-size: 2rem; letter-spacing: -.04em; }
+.student-access-card > p:not(.eyebrow) { color: var(--muted); }
+.student-access-card form { margin-top: 1.5rem; display: grid; gap: 1rem; }
+.student-access-card label > span { display: block; margin-bottom: .4rem; color: #2c4d57; font-size: .88rem; font-weight: 800; }
+.student-access-card > small { margin-top: 1.2rem; display: block; color: #738890; line-height: 1.5; }
+.access-tabs { margin-bottom: 1.7rem; padding: .3rem; display: grid; grid-template-columns: 1fr 1fr; gap: .3rem; background: #edf5f6; border-radius: 13px; }
+.access-tabs button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; color: #58727b; background: transparent; border: 0; border-radius: 10px; font-size: .82rem; font-weight: 850; cursor: pointer; }
+.access-tabs button.active { color: #fff; background: var(--night); box-shadow: 0 8px 18px rgb(9 45 57 / 16%); }
+.student-logout { margin-top: 1rem; color: #fff; border-color: #42636b; }
+
+.concealed-content { min-height: 140px; margin-top: .7rem; padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .35rem; color: #526a73; text-align: center; background: repeating-linear-gradient(135deg, #f0f6f7, #f0f6f7 12px, #e8f1f3 12px, #e8f1f3 24px); border-radius: 11px; }
+.concealed-content svg { color: var(--primary); }
+.concealed-content span { font-size: .82rem; }
+.identity-reveal-box { margin-top: 1rem; padding: 1rem; color: #5e3f1e; background: #fff7e8; border: 1px solid #e7c993; border-radius: 14px; }
+.identity-reveal-box > div:first-child { display: flex; align-items: center; gap: .5rem; }
+.identity-reveal-box p { margin: .4rem 0 .8rem; font-size: .84rem; }
+.identity-reveal-box textarea { margin-bottom: .65rem; background: #fff; }
+.identity-reveal-box > small { display: block; color: #705636; }
+.revealed-identity { padding: .9rem; display: grid !important; gap: .1rem !important; color: var(--night); background: #fff; border: 1px solid #e8d4ad; border-radius: 11px; }
+.revealed-identity small, .revealed-identity strong, .revealed-identity span { display: block; }
+.revealed-identity span { color: #5f747c; font-size: .84rem; }
+.ticket-tags > span { display: inline-flex; align-items: center; gap: .3rem; }
+.ticket-tags > span svg { width: .78rem; height: .78rem; }
+
+.import-page { min-height: 100vh; padding: clamp(2rem, 5vw, 5rem) clamp(1rem, 8vw, 10rem); display: grid; grid-template-columns: minmax(260px, .65fr) minmax(420px, 1fr); align-content: start; gap: 1rem clamp(2rem, 6vw, 7rem); background: linear-gradient(135deg, var(--night-deep) 0 35%, #eef6f8 35%); }
+.import-heading { grid-row: 1 / span 4; color: #b7cbd0; }
+.import-heading h1 { font-size: clamp(2.8rem, 5vw, 5rem); }
+.import-heading > p:last-child { max-width: 490px; }
+.back-link.dark { color: var(--cyan); }
+.import-notice { margin-top: 0; }
+.import-card { padding: clamp(1.3rem, 3vw, 2rem); background: #fff; border: 1px solid #d3e2e6; border-radius: 22px 22px 22px 7px; box-shadow: 0 20px 45px rgb(9 45 57 / 8%); }
+.import-card-title { display: flex; align-items: center; gap: .8rem; }
+.import-card-title > span { width: 46px; height: 46px; display: grid; place-items: center; flex: 0 0 auto; color: var(--primary); background: var(--cyan-soft); border-radius: 13px; }
+.import-card-title small { color: #758990; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.import-card-title h2 { margin: 0; color: var(--night); font-size: 1.35rem; }
+.import-card > p { color: var(--muted); }
+.import-card code { padding: .65rem .75rem; display: block; overflow-x: auto; color: #214a55; background: #eef6f7; border-radius: 9px; }
+.file-picker { min-height: 92px; padding: 1rem; display: flex; align-items: center; justify-content: center; gap: .6rem; color: var(--primary); background: #f4f9fa; border: 2px dashed #a9cbd1; border-radius: 14px; font-weight: 850; cursor: pointer; }
+.file-picker input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.import-summary { margin: .8rem 0; padding: .75rem; display: flex; align-items: center; gap: .65rem; color: #42606a; background: #eef6f7; border-radius: 10px; }
+.import-summary strong { color: var(--primary); font-size: 1.4rem; }
+.import-success { border-color: #9dcfb4; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 1050px) {
@@ -294,6 +346,10 @@ input::placeholder, textarea::placeholder { color: #93a5ab; }
   .form-intro { position: static; }
   .login-page { grid-template-columns: 1fr; background: linear-gradient(180deg, var(--night-deep) 0 50%, #eaf4f6 50%); }
   .login-card { max-width: 680px; width: 100%; justify-self: center; }
+  .student-access-page { grid-template-columns: 1fr; background: linear-gradient(180deg, var(--night-deep) 0 48%, #eaf4f6 48%); }
+  .student-access-card { max-width: 680px; width: 100%; justify-self: center; }
+  .import-page { grid-template-columns: 1fr; background: linear-gradient(180deg, var(--night-deep) 0 31%, #eef6f8 31%); }
+  .import-heading { grid-row: auto; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .admin-stats { grid-template-columns: repeat(3, 1fr); }
   .admin-toolbar { grid-template-columns: 1fr 1fr; }
@@ -332,6 +388,9 @@ input::placeholder, textarea::placeholder { color: #93a5ab; }
   .decision-grid { grid-template-columns: 1fr; }
   .workflow-box { align-items: stretch; flex-direction: column; }
   .workflow-box .button { width: 100%; }
+  .student-access-info h1 { font-size: clamp(2.8rem, 14vw, 4.5rem); }
+  .access-tabs { grid-template-columns: 1fr; }
+  .import-page { background: linear-gradient(180deg, var(--night-deep) 0 25%, #eef6f8 25%); }
 }
 
 @media (prefers-reduced-motion: reduce) {

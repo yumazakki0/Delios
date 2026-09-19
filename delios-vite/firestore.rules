@@ -9,67 +9,37 @@ service cloud.firestore {
 
     match /admins/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if false;
+      allow create, update, delete: if false;
+    }
+
+    match /students/{studentId} {
+      allow read: if request.auth != null && request.auth.uid == studentId;
+      allow create, update, delete: if false;
     }
 
     match /support_reports/{reportId} {
-      allow create: if request.resource.data.keys().hasOnly([
-          'reporter_name',
-          'school_year',
-          'class_group',
-          'category',
-          'description',
+      // O envio passa pela API para aplicar limite, triagem e separar a identidade.
+      allow create: if false;
+      allow read: if isAdmin();
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'status',
-          'privacy_notice_acknowledged',
-          'created_at',
+          'priority',
+          'review_result',
+          'internal_notes',
           'updated_at'
         ])
-        && (request.resource.data.reporter_name == null
-          || (request.resource.data.reporter_name is string
-            && request.resource.data.reporter_name.size() <= 120))
-        && (request.resource.data.school_year == null
-          || (request.resource.data.school_year is string
-            && request.resource.data.school_year.size() <= 30))
-        && (request.resource.data.class_group == null
-          || (request.resource.data.class_group is string
-            && request.resource.data.class_group.size() <= 30))
-        && request.resource.data.category in [
-          'bullying', 'cyberbullying', 'exclusao', 'ameaca', 'preconceito',
-          'conflito', 'casa', 'outro', 'nao_sei'
-        ]
-        && request.resource.data.description is string
-        && request.resource.data.description.size() >= 20
-        && request.resource.data.description.size() <= 4000
-        && request.resource.data.status == 'novo'
-        && request.resource.data.privacy_notice_acknowledged == true
-        && request.resource.data.created_at == request.time
-        && request.resource.data.updated_at == request.time;
-
-      allow read: if isAdmin();
-
-      allow update: if isAdmin()
-        && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly([
-            'status',
-            'priority',
-            'review_result',
-            'internal_notes',
-            'updated_at'
-          ])
-        && request.resource.data.status in [
-          'novo', 'em_analise', 'encaminhado', 'concluido'
-        ]
-        && request.resource.data.get('priority', 'nao_definida') in [
-          'nao_definida', 'baixa', 'media', 'alta'
-        ]
-        && request.resource.data.get('review_result', 'pendente') in [
-          'pendente', 'legitimo', 'conteudo_inadequado'
-        ]
-        && request.resource.data.get('internal_notes', '') is string
-        && request.resource.data.get('internal_notes', '').size() <= 2000
-        && request.resource.data.updated_at == request.time;
-
+        && request.resource.data.status in ['novo', 'em_analise', 'encaminhado', 'concluido']
+        && request.resource.data.priority in ['nao_definida', 'baixa', 'media', 'alta']
+        && request.resource.data.review_result in ['pendente', 'legitimo', 'conteudo_inadequado']
+        && request.resource.data.internal_notes is string
+        && request.resource.data.internal_notes.size() <= 3000;
       allow delete: if false;
+    }
+
+    // Convites, vínculo de identidade, auditoria e limite de envio são exclusivos da API.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

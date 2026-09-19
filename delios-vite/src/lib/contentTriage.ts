@@ -1,5 +1,5 @@
 export type ContentFlag = {
-  code: "link" | "caps" | "repetition" | "low_variety";
+  code: "link" | "caps" | "repetition" | "low_variety" | "symbol_heavy" | "many_lines";
   label: string;
   explanation: string;
 };
@@ -12,6 +12,9 @@ export function getContentFlags(content: string): ContentFlag[] {
   const words = trimmed.toLocaleLowerCase("pt-BR").match(/[a-zà-ÿ0-9]+/gi) ?? [];
   const letters = trimmed.match(/[a-zà-ÿ]/gi) ?? [];
   const uppercaseLetters = trimmed.match(/[A-ZÀ-Ý]/g) ?? [];
+  const visibleCharacters = trimmed.replace(/\s/g, "");
+  const symbolCharacters = visibleCharacters.match(/[^a-zà-ÿ0-9]/gi) ?? [];
+  const nonEmptyLines = trimmed.split(/\r?\n/).filter((line) => line.trim()).length;
 
   if (/https?:\/\/|www\./i.test(trimmed)) {
     flags.push({ code: "link", label: "Contém link", explanation: "Abra links somente se a política da escola permitir e se a origem for conhecida." });
@@ -27,6 +30,14 @@ export function getContentFlags(content: string): ContentFlag[] {
 
   if (words.length >= 12 && new Set(words).size / words.length < 0.34) {
     flags.push({ code: "low_variety", label: "Texto muito repetitivo", explanation: "Poucas palavras diferentes aparecem várias vezes." });
+  }
+
+  if (visibleCharacters.length >= 30 && symbolCharacters.length / visibleCharacters.length > 0.42) {
+    flags.push({ code: "symbol_heavy", label: "Muitos símbolos", explanation: "O formato pode conter um desenho em texto ou conteúdo que merece abertura consciente." });
+  }
+
+  if (nonEmptyLines >= 12) {
+    flags.push({ code: "many_lines", label: "Muitas linhas curtas", explanation: "A estrutura incomum pode ser apenas formatação; confira o conteúdo antes de classificar." });
   }
 
   return flags;

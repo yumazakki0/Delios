@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { ArrowRight, LockKeyhole, Menu, X } from "lucide-react";
+import { ArrowRight, GraduationCap, LockKeyhole, Menu, X } from "lucide-react";
 
 export function Header() {
   const [open, setOpen] = useState(false);
@@ -19,7 +19,7 @@ export function Header() {
 
       <nav className={open ? "main-nav nav-open" : "main-nav"} aria-label="Navegação principal">
         <NavLink to="/" onClick={() => setOpen(false)}>Início</NavLink>
-        <NavLink to="/ajuda" onClick={() => setOpen(false)}>Pedir ajuda</NavLink>
+        <NavLink to="/aluno" onClick={() => setOpen(false)}><GraduationCap /> Acesso do aluno</NavLink>
         <NavLink to="/login" onClick={() => setOpen(false)}><LockKeyhole /> Área da equipe</NavLink>
       </nav>
 
