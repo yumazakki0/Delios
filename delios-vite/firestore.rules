@@ -49,10 +49,24 @@ service cloud.firestore {
 
       allow update: if isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status', 'updated_at'])
+          .hasOnly([
+            'status',
+            'priority',
+            'review_result',
+            'internal_notes',
+            'updated_at'
+          ])
         && request.resource.data.status in [
           'novo', 'em_analise', 'encaminhado', 'concluido'
         ]
+        && request.resource.data.get('priority', 'nao_definida') in [
+          'nao_definida', 'baixa', 'media', 'alta'
+        ]
+        && request.resource.data.get('review_result', 'pendente') in [
+          'pendente', 'legitimo', 'conteudo_inadequado'
+        ]
+        && request.resource.data.get('internal_notes', '') is string
+        && request.resource.data.get('internal_notes', '').size() <= 2000
         && request.resource.data.updated_at == request.time;
 
       allow delete: if false;

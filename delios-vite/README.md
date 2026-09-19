@@ -19,6 +19,9 @@ Plataforma de acolhimento escolar com formulário confidencial, envio anônimo o
 - confirmação clara de confidencialidade e limites do sigilo;
 - login sem cadastro público;
 - painel administrativo com busca, filtros e status;
+- fila de tickets com prioridade, leitura detalhada e conclusão rápida;
+- triagem auxiliar de padrões suspeitos, sempre sujeita à revisão humana;
+- classificação manual e anotações internas protegidas;
 - botão de saída rápida;
 - banco protegido contra leitura anônima.
 

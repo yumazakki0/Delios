@@ -1,4 +1,6 @@
 export type ReportStatus = "novo" | "em_analise" | "encaminhado" | "concluido";
+export type ReportPriority = "nao_definida" | "baixa" | "media" | "alta";
+export type ReviewResult = "pendente" | "legitimo" | "conteudo_inadequado";
 
 export type SupportReport = {
   id: string;
@@ -11,6 +13,9 @@ export type SupportReport = {
   description: string;
   status: ReportStatus;
   privacy_notice_acknowledged: boolean;
+  priority?: ReportPriority;
+  review_result?: ReviewResult;
+  internal_notes?: string;
 };
 
 export const categoryLabels: Record<string, string> = {
@@ -30,4 +35,17 @@ export const statusLabels: Record<ReportStatus, string> = {
   em_analise: "Em análise",
   encaminhado: "Encaminhado",
   concluido: "Concluído",
+};
+
+export const priorityLabels: Record<ReportPriority, string> = {
+  nao_definida: "Não definida",
+  baixa: "Baixa",
+  media: "Média",
+  alta: "Alta",
+};
+
+export const reviewLabels: Record<ReviewResult, string> = {
+  pendente: "Ainda não revisado",
+  legitimo: "Relato pertinente",
+  conteudo_inadequado: "Possível conteúdo inadequado",
 };
