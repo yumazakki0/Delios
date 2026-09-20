@@ -1,8 +1,8 @@
 import { createHash, randomBytes } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue } from "firebase-admin/firestore";
-import { getAdminDb } from "../_lib/firebase-admin.js";
-import { allowPost, handleApiError, normalizeUsername, requireDirector, sendJson } from "../_lib/http.js";
+import { getAdminDb } from "../_lib/firebase-admin.cjs";
+import { allowPost, handleApiError, normalizeUsername, requireDirector, sendJson } from "../_lib/http.cjs";
 
 type StudentInput = { username?: unknown; full_name?: unknown; school_year?: unknown; class_group?: unknown };
 const usernamePattern = /^[a-z0-9._-]{3,32}$/;

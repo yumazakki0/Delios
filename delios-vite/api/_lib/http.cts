@@ -1,6 +1,6 @@
 import type { DecodedIdToken } from "firebase-admin/auth";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getAdminAuth, getAdminDb } from "./firebase-admin.js";
+import { getAdminAuth, getAdminDb } from "./firebase-admin.cjs";
 
 export function sendJson(response: VercelResponse, status: number, body: unknown) {
   response.status(status).json(body);
