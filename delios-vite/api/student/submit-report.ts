@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import { adminDb } from "../_lib/firebase-admin";
-import { allowPost, handleApiError, requireUser, sendJson } from "../_lib/http";
-import { analyzeContent } from "../_lib/triage";
+import { adminDb } from "../_lib/firebase-admin.js";
+import { allowPost, handleApiError, requireUser, sendJson } from "../_lib/http.js";
+import { analyzeContent } from "../_lib/triage.js";
 
 const categories = new Set(["bullying", "cyberbullying", "exclusao", "ameaca", "preconceito", "conflito", "casa", "outro", "nao_sei"]);
 const minimumIntervalSeconds = 45;

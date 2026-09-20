@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminDb } from "../_lib/firebase-admin";
-import { allowPost, handleApiError, requireDirector, sendJson } from "../_lib/http";
+import { adminDb } from "../_lib/firebase-admin.js";
+import { allowPost, handleApiError, requireDirector, sendJson } from "../_lib/http.js";
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (!allowPost(request, response)) return;

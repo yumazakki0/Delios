@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminAuth, adminDb } from "../_lib/firebase-admin";
-import { allowPost, handleApiError, normalizeUsername, sendJson, studentEmail } from "../_lib/http";
+import { adminAuth, adminDb } from "../_lib/firebase-admin.js";
+import { allowPost, handleApiError, normalizeUsername, sendJson, studentEmail } from "../_lib/http.js";
 
 function codeHash(code: string) {
   return createHash("sha256").update(code).digest("hex");

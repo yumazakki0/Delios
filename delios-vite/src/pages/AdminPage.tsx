@@ -34,6 +34,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { getContentFlags } from "../lib/contentTriage";
 import { auth, db } from "../lib/firebase";
+import { readApiResponse } from "../lib/apiResponse";
 import {
   categoryLabels,
   priorityLabels,
@@ -206,9 +207,14 @@ export function AdminPage() {
         updated_at: serverTimestamp(),
       });
       setFeedback(successMessage);
-    } catch {
+    } catch (updateError) {
       setReports(previous);
-      setError("A alteração não foi salva. Tente novamente.");
+      const code = typeof updateError === "object" && updateError && "code" in updateError
+        ? String(updateError.code)
+        : "";
+      setError(code.includes("permission-denied")
+        ? "O Firestore recusou a alteração. Publique o arquivo firestore.rules corrigido e tente novamente."
+        : "A alteração não foi salva. Tente novamente.");
     } finally {
       setSaving(false);
     }
@@ -236,7 +242,7 @@ export function AdminPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ reportId: selectedReport.id, reason: identityReason }),
       });
-      const data = await response.json() as { identity?: RevealedIdentity; error?: string };
+      const data = await readApiResponse<{ identity?: RevealedIdentity; error?: string }>(response);
       if (!response.ok || !data.identity) throw new Error(data.error ?? "Não foi possível revelar a identidade.");
       setRevealedIdentity(data.identity);
       setFeedback("A identificação foi revelada e o acesso ficou registrado.");

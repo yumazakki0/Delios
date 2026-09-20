@@ -3,6 +3,7 @@ import { Check, ChevronLeft, EyeOff, Lock, LogOut, Send, Shield, UserCheck } fro
 import { signOut } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, isFirebaseConfigured } from "../lib/firebase";
+import { readApiResponse } from "../lib/apiResponse";
 import { categoryLabels } from "../types";
 
 type FormState = {
@@ -50,7 +51,7 @@ export function ReportPage() {
           privacyNoticeAcknowledged: true,
         }),
       });
-      const data = await response.json() as { error?: string; retryAfterSeconds?: number };
+      const data = await readApiResponse<{ error?: string; retryAfterSeconds?: number }>(response);
       if (!response.ok) throw new Error(data.retryAfterSeconds ? `${data.error} Tente novamente em ${data.retryAfterSeconds} segundos.` : data.error);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Não foi possível enviar agora. Procure a equipe pessoalmente se precisar.");

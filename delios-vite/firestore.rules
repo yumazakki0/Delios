@@ -29,11 +29,17 @@ service cloud.firestore {
           'internal_notes',
           'updated_at'
         ])
-        && request.resource.data.status in ['novo', 'em_analise', 'encaminhado', 'concluido']
-        && request.resource.data.priority in ['nao_definida', 'baixa', 'media', 'alta']
-        && request.resource.data.review_result in ['pendente', 'legitimo', 'conteudo_inadequado']
-        && request.resource.data.internal_notes is string
-        && request.resource.data.internal_notes.size() <= 3000;
+        // Tickets anteriores à V3 podem ainda não possuir todos estes campos.
+        // Cada valor só é validado quando o painel realmente o altera.
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
+          || request.resource.data.status in ['novo', 'em_analise', 'encaminhado', 'concluido'])
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['priority'])
+          || request.resource.data.priority in ['nao_definida', 'baixa', 'media', 'alta'])
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['review_result'])
+          || request.resource.data.review_result in ['pendente', 'legitimo', 'conteudo_inadequado'])
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['internal_notes'])
+          || (request.resource.data.internal_notes is string
+            && request.resource.data.internal_notes.size() <= 3000));
       allow delete: if false;
     }
 

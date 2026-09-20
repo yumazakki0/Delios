@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from "react";
 import { ArrowLeft, Download, FileSpreadsheet, ShieldCheck, Upload, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { auth } from "../lib/firebase";
+import { readApiResponse } from "../lib/apiResponse";
 
 type StudentRow = {
   username: string;
@@ -90,7 +91,7 @@ export function StudentImportPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ students }),
       });
-      const data = await response.json() as { students?: ImportedStudent[]; error?: string };
+      const data = await readApiResponse<{ students?: ImportedStudent[]; error?: string }>(response);
       if (!response.ok || !data.students) throw new Error(data.error ?? "Não foi possível importar a lista.");
       setImported(data.students);
     } catch (importError) {

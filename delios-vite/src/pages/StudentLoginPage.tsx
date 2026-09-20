@@ -3,6 +3,7 @@ import { Eye, EyeOff, KeyRound, LogIn, ShieldCheck, UserRoundPlus } from "lucide
 import { signInWithCustomToken, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth, isFirebaseConfigured } from "../lib/firebase";
+import { readApiResponse } from "../lib/apiResponse";
 
 function accountEmail(username: string) {
   return `${username.trim().toLocaleLowerCase("pt-BR")}@students.delios.local`;
@@ -47,7 +48,7 @@ export function StudentLoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, activationCode, password }),
       });
-      const data = await response.json() as { customToken?: string; error?: string };
+      const data = await readApiResponse<{ customToken?: string; error?: string }>(response);
       if (!response.ok || !data.customToken) throw new Error(data.error ?? "Não foi possível ativar a conta.");
       await signInWithCustomToken(auth, data.customToken);
       navigate("/ajuda", { replace: true });
