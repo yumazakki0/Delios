@@ -15,6 +15,21 @@ O painel também podia receber `permission-denied` ao atualizar tickets criados 
 - leitura segura de respostas das APIs, inclusive quando a Vercel devolver texto;
 - mensagens administrativas melhores para erros de permissão;
 - regras compatíveis com tickets antigos sem liberar edição do conteúdo original.
+- inicialização tardia do Firebase Admin para impedir `FUNCTION_INVOCATION_FAILED` antes da rota;
+- normalização da chave privada com ou sem aspas externas e com `\\n` ou quebras reais;
+- mensagens seguras que distinguem variável ausente de chave privada inválida.
+
+## Erro `FUNCTION_INVOCATION_FAILED` na importação
+
+Quando o log mostra `No outgoing requests`, a função caiu antes de consultar o Firebase. Confira em **Vercel → Project → Settings → Environment Variables** se estas três variáveis estão habilitadas para **Production**:
+
+```text
+FIREBASE_ADMIN_PROJECT_ID
+FIREBASE_ADMIN_CLIENT_EMAIL
+FIREBASE_ADMIN_PRIVATE_KEY
+```
+
+O valor da chave deve ser o campo `private_key` do JSON da conta de serviço. Não cole o JSON inteiro e não coloque `FIREBASE_ADMIN_PRIVATE_KEY=` dentro do valor. Depois de qualquer alteração de ENV, faça um novo deploy; deploys antigos não recebem as variáveis novas.
 
 ## Passos obrigatórios depois de enviar o código
 

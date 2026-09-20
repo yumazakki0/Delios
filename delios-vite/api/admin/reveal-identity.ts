@@ -1,12 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminDb } from "../_lib/firebase-admin.js";
+import { getAdminDb } from "../_lib/firebase-admin.js";
 import { allowPost, handleApiError, requireDirector, sendJson } from "../_lib/http.js";
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (!allowPost(request, response)) return;
 
   try {
+    const adminDb = getAdminDb();
     const director = await requireDirector(request);
     const reportId = String(request.body?.reportId ?? "").trim();
     const reason = String(request.body?.reason ?? "").trim();

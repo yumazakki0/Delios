@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminAuth, adminDb } from "../_lib/firebase-admin.js";
+import { getAdminAuth, getAdminDb } from "../_lib/firebase-admin.js";
 import { allowPost, handleApiError, normalizeUsername, sendJson, studentEmail } from "../_lib/http.js";
 
 function codeHash(code: string) {
@@ -12,6 +12,8 @@ export default async function handler(request: VercelRequest, response: VercelRe
   if (!allowPost(request, response)) return;
 
   try {
+    const adminAuth = getAdminAuth();
+    const adminDb = getAdminDb();
     const username = normalizeUsername(request.body?.username);
     const code = String(request.body?.activationCode ?? "").trim().toUpperCase();
     const password = String(request.body?.password ?? "");

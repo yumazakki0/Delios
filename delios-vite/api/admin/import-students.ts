@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminDb } from "../_lib/firebase-admin.js";
+import { getAdminDb } from "../_lib/firebase-admin.js";
 import { allowPost, handleApiError, normalizeUsername, requireDirector, sendJson } from "../_lib/http.js";
 
 type StudentInput = { username?: unknown; full_name?: unknown; school_year?: unknown; class_group?: unknown };
@@ -21,6 +21,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
   if (!allowPost(request, response)) return;
 
   try {
+    const adminDb = getAdminDb();
     const director = await requireDirector(request);
     const rawStudents = Array.isArray(request.body?.students) ? request.body.students as StudentInput[] : [];
     if (!rawStudents.length || rawStudents.length > 800) return sendJson(response, 400, { error: "Envie entre 1 e 800 estudantes por arquivo." });

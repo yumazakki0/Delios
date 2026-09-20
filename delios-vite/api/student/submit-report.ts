@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import { adminDb } from "../_lib/firebase-admin.js";
+import { getAdminDb } from "../_lib/firebase-admin.js";
 import { allowPost, handleApiError, requireUser, sendJson } from "../_lib/http.js";
 import { analyzeContent } from "../_lib/triage.js";
 
@@ -11,6 +11,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
   if (!allowPost(request, response)) return;
 
   try {
+    const adminDb = getAdminDb();
     const user = await requireUser(request);
     const category = String(request.body?.category ?? "");
     const description = String(request.body?.description ?? "").trim();
