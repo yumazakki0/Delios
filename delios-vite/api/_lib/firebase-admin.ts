@@ -6,8 +6,8 @@ let cachedAdminApp: App | null = null;
 
 function withoutWrappingQuotes(value: string) {
   const trimmed = value.trim();
-  const first = trimmed.at(0);
-  const last = trimmed.at(-1);
+  const first = trimmed[0];
+  const last = trimmed[trimmed.length - 1];
   return first && first === last && (first === '"' || first === "'")
     ? trimmed.slice(1, -1).trim()
     : trimmed;
