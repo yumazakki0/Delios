@@ -1,12 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { Eye, EyeOff, KeyRound, LogIn, ShieldCheck, UserRoundPlus } from "lucide-react";
-import { signInWithCustomToken, signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithCustomToken } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth, isFirebaseConfigured } from "../lib/firebase";
 import { readApiResponse } from "../lib/apiResponse";
 
 function accountEmail(username: string) {
-  return `${username.trim().toLocaleLowerCase("pt-BR")}@students.delios.local`;
+  return `${username.trim().replace(/\s+/g, "").toLocaleLowerCase("pt-BR")}@students.delios.local`;
+}
+
+function isValidStudentUsername(username: string) {
+  return /^(?:[1-9]|[1-9]\d|1[2-9]\d|[1-9]\d{2}|[1-5]\d{3}|6[0-7]\d{2}|6789)reg[0-9]$/i.test(username.trim().replace(/\s+/g, ""));
 }
 
 export function StudentLoginPage() {
@@ -25,11 +29,24 @@ export function StudentLoginPage() {
     if (!auth) return setError("O Firebase ainda não foi configurado.");
     setLoading(true);
 
+    const normalizedUsername = username.trim().replace(/\s+/g, "");
+    if (!isValidStudentUsername(normalizedUsername)) {
+      setLoading(false);
+      return setError("Use o formato 123reg5 ou 3reg5. O número deve ser de 1 a 6789 e terminar com reg + número.");
+    }
+
     try {
-      await signInWithEmailAndPassword(auth, accountEmail(username), password);
+      const response = await fetch("/api/student/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: normalizedUsername }),
+      });
+      const data = await readApiResponse<{ customToken?: string; error?: string }>(response);
+      if (!response.ok || !data.customToken) throw new Error(data.error ?? "Não foi possível entrar com o usuário.");
+      await signInWithCustomToken(auth, data.customToken);
       navigate("/ajuda", { replace: true });
-    } catch {
-      setError("Usuário ou senha inválidos.");
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : "Não foi possível entrar com o usuário.");
     } finally {
       setLoading(false);
     }
@@ -39,6 +56,7 @@ export function StudentLoginPage() {
     event.preventDefault();
     setError("");
     if (!auth) return setError("O Firebase ainda não foi configurado.");
+    if (!isValidStudentUsername(username)) return setError("Use o formato 123reg5 ou 3reg5 para o usuário.");
     if (password.length < 8) return setError("Crie uma senha com pelo menos 8 caracteres.");
     setLoading(true);
 
@@ -81,14 +99,16 @@ export function StudentLoginPage() {
 
         <p className="eyebrow">Acesso do estudante</p>
         <h2>{mode === "login" ? "Entre com sua conta" : "Ative sua conta"}</h2>
-        <p>{mode === "login" ? "Use o nome de usuário entregue pela escola." : "Use o código individual recebido da escola e crie uma senha."}</p>
+        <p>{mode === "login" ? "Use o nome de usuário entregue pela escola no formato 123reg5." : "Use o código individual recebido da escola e crie uma senha."}</p>
 
         {!isFirebaseConfigured && <div className="setup-warning"><KeyRound /><span>Adicione as variáveis do Firebase no arquivo .env.</span></div>}
 
         <form onSubmit={mode === "login" ? handleLogin : handleActivation}>
-          <label><span>Nome de usuário</span><input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" required minLength={3} maxLength={32} placeholder="Ex.: gabriel.8b" /></label>
+          <label><span>Nome de usuário</span><input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" required minLength={3} maxLength={32} placeholder="Ex.: 123reg5" /></label>
           {mode === "activate" && <label><span>Código de ativação</span><input value={activationCode} onChange={(event) => setActivationCode(event.target.value.toUpperCase())} autoComplete="one-time-code" required minLength={8} maxLength={16} placeholder="Código entregue pela escola" /></label>}
-          <label><span>{mode === "login" ? "Senha" : "Crie uma senha"}</span><div className="password-field"><input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={8} placeholder="Mínimo de 8 caracteres" /><button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>{showPassword ? <EyeOff /> : <Eye />}</button></div></label>
+          {mode === "activate" && (
+            <label><span>Crie uma senha</span><div className="password-field"><input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" required minLength={8} placeholder="Mínimo de 8 caracteres" /><button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>{showPassword ? <EyeOff /> : <Eye />}</button></div></label>
+          )}
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="button button-primary login-button" disabled={loading} type="submit">{loading ? "Aguarde…" : mode === "login" ? <><LogIn /> Entrar</> : <><KeyRound /> Ativar conta</>}</button>
         </form>

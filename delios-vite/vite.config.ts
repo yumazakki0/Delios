@@ -5,3 +5,4 @@ export default defineConfig({
   plugins: [react()],
 });
 // talvez ñ esteja funcionando adequadamente.... vou revisar o erro ta aqui ctz
+// está funcionadno finalemtne 21/09 

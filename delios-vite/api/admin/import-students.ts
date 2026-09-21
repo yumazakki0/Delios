@@ -2,10 +2,9 @@ import { createHash, randomBytes } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb } from "../_lib/firebase-admin.js";
-import { allowPost, handleApiError, normalizeUsername, requireDirector, sendJson } from "../_lib/http.js";
+import { allowPost, handleApiError, isValidStudentUsername, normalizeUsername, requireDirector, sendJson } from "../_lib/http.js";
 
 type StudentInput = { username?: unknown; full_name?: unknown; school_year?: unknown; class_group?: unknown };
-const usernamePattern = /^[a-z0-9._-]{3,32}$/;
 const codeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function activationCode() {
@@ -33,7 +32,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       const schoolYear = String(student.school_year ?? "").trim();
       const classGroup = String(student.class_group ?? "").trim();
 
-      if (!usernamePattern.test(username)) throw new Error(`ROW:${index + 2}:nome de usuário inválido`);
+      if (!isValidStudentUsername(username)) throw new Error(`ROW:${index + 2}:nome de usuário inválido`);
       if (seen.has(username)) throw new Error(`ROW:${index + 2}:nome de usuário repetido`);
       if (fullName.length < 3 || fullName.length > 120) throw new Error(`ROW:${index + 2}:nome completo inválido`);
       if (!schoolYear || schoolYear.length > 30 || !classGroup || classGroup.length > 30) throw new Error(`ROW:${index + 2}:ano ou turma inválidos`);

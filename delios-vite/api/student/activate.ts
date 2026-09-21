@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminAuth, getAdminDb } from "../_lib/firebase-admin.js";
-import { allowPost, handleApiError, normalizeUsername, sendJson, studentEmail } from "../_lib/http.js";
+import { allowPost, handleApiError, isValidStudentUsername, normalizeUsername, sendJson, studentEmail } from "../_lib/http.js";
 
 function codeHash(code: string) {
   return createHash("sha256").update(code).digest("hex");
@@ -17,8 +17,8 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const username = normalizeUsername(request.body?.username);
     const code = String(request.body?.activationCode ?? "").trim().toUpperCase();
     const password = String(request.body?.password ?? "");
-    if (!/^[a-z0-9._-]{3,32}$/.test(username) || code.length < 8 || password.length < 8) {
-      return sendJson(response, 400, { error: "Dados de ativação inválidos." });
+    if (!isValidStudentUsername(username) || code.length < 8 || password.length < 8) {
+      return sendJson(response, 400, { error: "Usuário inválido. Use o formato 123reg5 ou 6789reg9." });
     }
 
     const inviteRef = adminDb.collection("student_invites").doc(username);

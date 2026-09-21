@@ -28,7 +28,12 @@ export async function requireDirector(request: VercelRequest) {
 }
 
 export function normalizeUsername(value: unknown) {
-  return String(value ?? "").trim().toLocaleLowerCase("pt-BR");
+  return String(value ?? "").trim().replace(/\s+/g, "").toLocaleLowerCase("pt-BR");
+}
+
+export function isValidStudentUsername(value: unknown) {
+  const username = normalizeUsername(value);
+  return /^(?:[1-9]|[1-9]\d|1[2-9]\d|[1-9]\d{2}|[1-5]\d{3}|6[0-7]\d{2}|6789)reg[0-9]$/i.test(username);
 }
 
 export function studentEmail(username: string) {
